@@ -1,0 +1,520 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aether AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Markdown & code highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js"></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>{window.hljs&&hljs.highlightAll?.()});</script>
+  <style>
+    :root{
+      --bg: #0b0e13; /* default: cosmos */
+      --panel: #0f141b;
+      --muted: #6b7686;
+      --text: #e6ebf2;
+      --accent: #6ae3ff;
+      --accent-2: #a58bff;
+      --ring: rgba(106,227,255,.35);
+      --card: #0d1218;
+      --card-2: #0c1b2a;
+      --danger: #ff5d73;
+      --success: #69f0ae;
+      --warning: #ffd166;
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --shadow-1: 0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+      --shadow-2: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1200px 800px at 20% -10%, rgba(106,227,255,.06), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, rgba(165,139,255,.07), transparent 60%), var(--bg);
+      color:var(--text); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; overflow:hidden;
+    }
+    .app{display:grid; grid-template-columns: 300px 1fr; grid-template-rows:auto 1fr auto; height:100vh; gap:14px; padding:14px}
+
+    /* Header */
+    header{
+      grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:linear-gradient(180deg, rgba(255,255,255,.02), transparent), var(--panel); border-radius:var(--radius-xl); box-shadow:var(--shadow-1); position:relative; overflow:hidden;
+    }
+    header .brand{display:flex; align-items:center; gap:12px}
+    .glyph{width:36px; height:36px; position:relative; filter:drop-shadow(0 6px 16px rgba(106,227,255,.35));}
+    .glyph::before,.glyph::after{content:""; position:absolute; inset:0; border-radius:50%;}
+    .glyph::before{background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--accent)); mask: radial-gradient(circle at center, transparent 52%, black 53%); animation: spin 6s linear infinite}
+    .glyph::after{inset:8px; background: radial-gradient(circle at 50% 60%, rgba(106,227,255,.6), transparent 60%), radial-gradient(circle at 40% 40%, rgba(165,139,255,.5), transparent 60%); filter: blur(6px); opacity:.8;}
+    @keyframes spin{to{transform: rotate(360deg)}}
+    .brand h1{font-size:18px; margin:0; letter-spacing:.5px}
+    .mood{font-size:12px; color:var(--muted)}
+    .controls{display:flex; align-items:center; gap:8px}
+    .btn{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition: .2s transform, .2s background, .2s border-color; box-shadow:var(--shadow-1);
+    }
+    .btn:hover{transform: translateY(-1px); border-color:rgba(255,255,255,.16)}
+    .btn.ghost{background:transparent; border-color:rgba(255,255,255,.08)}
+    .badge{padding:6px 10px; border-radius:999px; background:rgba(106,227,255,.12); color:var(--accent); border:1px solid var(--ring); font-size:12px}
+
+    /* Sidebar */
+    .sidebar{background:linear-gradient(180deg, rgba(255,255,255,.02), transparent), var(--panel); border-radius:var(--radius-xl); box-shadow:var(--shadow-1); padding:14px; display:flex; flex-direction:column; overflow:hidden}
+    .sidebar .section-title{font-size:12px; color:var(--muted); margin:12px 6px 6px}
+    .chat-list{flex:1; overflow:auto; padding-right:4px}
+    .chat-item{display:flex; gap:10px; align-items:center; background:var(--card); padding:10px; border-radius:12px; margin:6px 0; border:1px solid rgba(255,255,255,.06); cursor:pointer; transition:.15s transform, .2s background}
+    .chat-item:hover{transform: translateY(-1px)}
+    .chat-item .title{font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .chip{font-size:10px; color:var(--muted)}
+    .danger{color:var(--danger)}
+
+    /* Main */
+    .main{background:linear-gradient(180deg, rgba(255,255,255,.02), transparent), var(--panel); border-radius:var(--radius-xl); box-shadow:var(--shadow-2); display:grid; grid-template-rows: auto 1fr auto; overflow:hidden}
+
+    /* Think panel */
+    .think-wrap{display:grid; grid-template-columns: 1fr auto; gap:10px; padding:12px 16px; align-items:center; border-bottom:1px dashed rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(106,227,255,.06), transparent)}
+    .think-title{display:flex; align-items:center; gap:10px}
+    .think-light{width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent)}
+    .think-toggle{font-size:12px; color:var(--muted); cursor:pointer; user-select:none}
+    .think-panel{max-height:220px; overflow:auto; padding:0 16px 12px; font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12.5px; line-height:1.5; color:#9ad6e3}
+    .think-panel.hidden{display:none}
+    .think-chip{font-size:11px; color:var(--muted); padding:2px 8px; border:1px solid rgba(255,255,255,.08); border-radius:999px}
+
+    /* Messages */
+    .messages{position:relative; overflow:auto; padding:12px 16px 0}
+    .msg{display:grid; grid-template-columns: 38px 1fr; gap:12px; padding:14px; border-radius:16px; margin:10px 0; border:1px solid rgba(255,255,255,.06); background:var(--card)}
+    .who{width:38px; height:38px; border-radius:12px; background: radial-gradient(60% 80% at 30% 20%, rgba(106,227,255,.6), transparent), linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08)}
+    .who.user{background: radial-gradient(60% 80% at 30% 20%, rgba(165,139,255,.6), transparent), linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));}
+    .content{font-size:15px; line-height:1.6}
+    .content pre{background:#0b0f15; padding:14px; border-radius:12px; overflow:auto; border:1px solid rgba(255,255,255,.06)}
+    .content code{font-family:"JetBrains Mono", ui-monospace, monospace}
+    .meta{display:flex; gap:8px; align-items:center; color:var(--muted); font-size:12px}
+
+    /* Composer */
+    .composer{display:grid; grid-template-columns: 1fr auto; gap:10px; padding:14px; border-top:1px solid rgba(255,255,255,.06); background:linear-gradient(0deg, rgba(255,255,255,.02), transparent)}
+    .input{display:flex; align-items:flex-end; gap:10px; background:var(--card-2); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:10px}
+    textarea{flex:1; background:transparent; border:none; color:var(--text); outline:none; resize:none; max-height:40vh; font-size:15px; line-height:1.5}
+    .send{display:flex; gap:10px}
+    .icon-btn{width:42px; height:42px; display:grid; place-items:center; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); cursor:pointer; transition:.2s transform}
+    .icon-btn:hover{transform: translateY(-1px)}
+
+    /* Settings & Dev drawer */
+    .drawers{display:grid; grid-template-columns: 1fr 1fr; gap:14px; padding:14px}
+    details{background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:12px; box-shadow:var(--shadow-1)}
+    summary{cursor:pointer; list-style:none}
+    summary::-webkit-details-marker{display:none}
+    .row{display:grid; grid-template-columns: 160px 1fr; gap:10px; padding:8px 0; align-items:center}
+    .row input[type="text"], .row input[type="password"], .row select, .row textarea{width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:var(--card); color:var(--text); font-family:inherit}
+    .help{font-size:12px; color:var(--muted)}
+
+    /* Loader */
+    .loader{display:flex; align-items:center; gap:10px}
+    .orb{width:12px; height:12px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent), 0 0 24px var(--accent-2); animation: floaty 1.2s ease-in-out infinite alternate}
+    .orb:nth-child(2){animation-delay:.15s}
+    .orb:nth-child(3){animation-delay:.3s}
+    @keyframes floaty{from{transform: translateY(0) scale(1)} to{transform: translateY(-6px) scale(1.15)}}
+
+    /* Toast */
+    .toast{position:fixed; bottom:18px; right:18px; background:var(--panel); border:1px solid rgba(255,255,255,.08); padding:10px 14px; border-radius:12px; color:var(--text); box-shadow:var(--shadow-1); opacity:0; transform: translateY(10px); transition:.3s; pointer-events:none}
+    .toast.show{opacity:1; transform: translateY(0)}
+
+    /* Responsive */
+    @media(max-width: 980px){.app{grid-template-columns:1fr}.sidebar{display:none}.drawers{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="brand">
+        <div class="glyph" aria-hidden="true"></div>
+        <div>
+          <h1>Aether AI</h1>
+          <div class="mood" id="mood">Ready when you are</div>
+        </div>
+        <span class="badge" id="modeBadge">Chat</span>
+      </div>
+      <div class="controls">
+        <button class="btn" id="newChat">New chat</button>
+        <button class="btn ghost" id="exportChat">Export</button>
+        <button class="btn ghost" id="toggleSettings">Settings</button>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="section-title">Saved chats</div>
+      <div class="chat-list" id="chatList"></div>
+      <div class="section-title">Quick actions</div>
+      <div style="display:grid; gap:8px">
+        <button class="btn" id="btnDev">Toggle Dev Mode</button>
+        <button class="btn ghost danger" id="purge">Clear All</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- THINK area (separate from chat) -->
+      <div class="think-wrap">
+        <div class="think-title">
+          <div class="think-light" aria-hidden="true"></div>
+          <strong>&lt;think&gt;</strong>
+          <span class="think-chip" id="thinkState">visible</span>
+        </div>
+        <div>
+          <label class="think-toggle"><input type="checkbox" id="autoHideThink"> Auto-hide thinking</label>
+          <span class="think-toggle" id="toggleThink">Hide</span>
+        </div>
+      </div>
+      <div class="think-panel" id="thinkPanel"></div>
+
+      <!-- Messages -->
+      <div class="messages" id="messages"></div>
+
+      <!-- Composer -->
+      <div class="composer">
+        <div class="input">
+          <textarea id="prompt" rows="1" placeholder="Send a message to Aether AI… (Shift+Enter for newline)"></textarea>
+          <button title="Insert Custom Instructions" class="icon-btn" id="openUserCI">CI</button>
+        </div>
+        <div class="send">
+          <button class="btn" id="sendBtn">Send</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Settings & Dev drawers -->
+    <section class="drawers" id="drawers" style="display:none">
+      <details open>
+        <summary><strong>Settings</strong></summary>
+        <div class="row">
+          <label>Theme</label>
+          <select id="theme">
+            <option value="cosmos">Cosmos (default)</option>
+            <option value="midnight">Midnight</option>
+            <option value="paper">Paper</option>
+            <option value="amoled">AMOLED</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Accent</label>
+          <select id="accent">
+            <option value="aqua">Aqua</option>
+            <option value="violet">Violet</option>
+            <option value="sunrise">Sunrise</option>
+            <option value="mint">Mint</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Language</label>
+          <select id="language">
+            <option value="en" selected>English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="zh">Chinese</option>
+            <option value="ja">Japanese</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Custom Instructions</label>
+          <textarea id="userCI" rows="4" placeholder="How should Aether AI behave? (User-level CI)"></textarea>
+        </div>
+        <div class="help">Tip: Thinking is shown by default above. Turn on auto-hide to collapse automatically when messages arrive. You can still expand per-turn.</div>
+      </details>
+
+      <details id="devDrawer">
+        <summary><strong>Developer Panel</strong> <span class="chip">deepseek training</span></summary>
+        <div class="row">
+          <label>Dev PIN</label>
+          <input type="password" id="devPin" placeholder="Optional gate" />
+        </div>
+        <div class="row">
+          <label>System Prompt</label>
+          <textarea id="systemPrompt" rows="4" placeholder="You are Aether AI…"></textarea>
+        </div>
+        <div class="row">
+          <label>Developer Instructions (deepseek)</label>
+          <textarea id="devCI" rows="6" placeholder="Internal training directives for deepseek persona (not shown to users)"></textarea>
+        </div>
+        <div class="row">
+          <label>Force English</label>
+          <select id="forceEnglish">
+            <option value="true" selected>True</option>
+            <option value="false">False</option>
+          </select>
+        </div>
+        <div class="help">The Developer Panel is for maintainers only. Values are sent to the backend but are not exposed in the visible chat UI. The AI refers to itself as <strong>Aether AI</strong> to users; within this panel's training context it may identify as <strong>deepseek</strong>.</div>
+      </details>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===== Random header moods =====
+    const MOODS = [
+      "Ready when you are", "Waiting for you", "Let's build something", "All ears", "Primed to reason",
+      "Booting up brilliance", "Standing by", "Let’s think together", "Just say the word", "Cursor at the ready"
+    ];
+
+    // ===== Theme engine =====
+    const THEMES = {
+      cosmos: {bg:'#0b0e13', panel:'#0f141b', text:'#e6ebf2', accent:'#6ae3ff', accent2:'#a58bff'},
+      midnight: {bg:'#0a0a0f', panel:'#11111a', text:'#e9e9ef', accent:'#6b9bff', accent2:'#b38bff'},
+      paper: {bg:'#f6f7fb', panel:'#ffffff', text:'#0c1016', accent:'#006d77', accent2:'#8338ec'},
+      amoled: {bg:'#000000', panel:'#0a0a0a', text:'#e8e8e8', accent:'#00d4ff', accent2:'#9f7bff'}
+    }
+    const ACCENTS = {
+      aqua: ['#6ae3ff','#a58bff'],
+      violet: ['#b08cff','#ff87f3'],
+      sunrise: ['#ff8ba7','#ffd166'],
+      mint: ['#69f0ae','#6ae3ff']
+    }
+    function applyTheme(theme='cosmos', accent='aqua'){
+      const t = THEMES[theme]||THEMES.cosmos; const a = ACCENTS[accent]||ACCENTS.aqua;
+      document.documentElement.style.setProperty('--bg', t.bg)
+      document.documentElement.style.setProperty('--panel', t.panel)
+      document.documentElement.style.setProperty('--text', t.text)
+      document.documentElement.style.setProperty('--accent', a[0])
+      document.documentElement.style.setProperty('--accent-2', a[1])
+    }
+
+    // ===== State =====
+    const state = {
+      chatId: null,
+      messages: [], // {role:'user'|'assistant'|'system', content}
+      thinkVisible: true,
+      autoHideThink: false,
+      devMode: false,
+      settings: { theme:'cosmos', accent:'aqua', language:'en', userCI:'' },
+      dev: { pin:'', systemPrompt:'', devCI:'', forceEnglish:true },
+    }
+
+    // ===== Elements =====
+    const el = {
+      mood: document.getElementById('mood'),
+      modeBadge: document.getElementById('modeBadge'),
+      chatList: document.getElementById('chatList'),
+      messages: document.getElementById('messages'),
+      prompt: document.getElementById('prompt'),
+      sendBtn: document.getElementById('sendBtn'),
+      thinkPanel: document.getElementById('thinkPanel'),
+      thinkState: document.getElementById('thinkState'),
+      toggleThink: document.getElementById('toggleThink'),
+      autoHideThink: document.getElementById('autoHideThink'),
+      newChat: document.getElementById('newChat'),
+      exportChat: document.getElementById('exportChat'),
+      purge: document.getElementById('purge'),
+      btnDev: document.getElementById('btnDev'),
+      drawers: document.getElementById('drawers'),
+      toggleSettings: document.getElementById('toggleSettings'),
+      theme: document.getElementById('theme'),
+      accent: document.getElementById('accent'),
+      language: document.getElementById('language'),
+      userCI: document.getElementById('userCI'),
+      openUserCI: document.getElementById('openUserCI'),
+      devDrawer: document.getElementById('devDrawer'),
+      devPin: document.getElementById('devPin'),
+      systemPrompt: document.getElementById('systemPrompt'),
+      devCI: document.getElementById('devCI'),
+      forceEnglish: document.getElementById('forceEnglish'),
+      toast: document.getElementById('toast'),
+    }
+
+    // ===== Utilities =====
+    const save = () => localStorage.setItem('aether_state', JSON.stringify({
+      chats: JSON.parse(localStorage.getItem('aether_chats')||'{}'),
+      settings: state.settings, dev: state.dev
+    }))
+    const load = () => {
+      try{
+        const s = JSON.parse(localStorage.getItem('aether_state')||'{}')
+        if(s.settings) state.settings = s.settings
+        if(s.dev) state.dev = s.dev
+      }catch{}
+      const t = localStorage.getItem('aether_chats')
+      return t? JSON.parse(t): {}
+    }
+    const saveChats = (data) => localStorage.setItem('aether_chats', JSON.stringify(data))
+
+    function toast(msg){ el.toast.textContent = msg; el.toast.classList.add('show'); setTimeout(()=>el.toast.classList.remove('show'), 2200) }
+    function titleFrom(text){ return (text||'').slice(0,48) || 'Untitled chat' }
+    function randomMood(){ el.mood.textContent = MOODS[Math.floor(Math.random()*MOODS.length)] }
+
+    // ===== Renderers =====
+    function renderChatList(){
+      const chats = load(); el.chatList.innerHTML = ''
+      Object.entries(chats).sort((a,b)=>b[1].updated - a[1].updated).forEach(([id,chat])=>{
+        const item = document.createElement('div'); item.className='chat-item'; item.onclick=()=>loadChat(id);
+        item.innerHTML = `<div class="who"></div>
+          <div style="flex:1">
+            <div class="title">${chat.title||'Untitled'}</div>
+            <div class="chip">${new Date(chat.updated).toLocaleString()}</div>
+          </div>
+          <div class="chip">${chat.messages?.length||0} msgs</div>`
+        el.chatList.appendChild(item)
+      })
+    }
+
+    function renderMessages(){
+      el.messages.innerHTML = ''
+      state.messages.forEach((m)=>{
+        const div = document.createElement('div'); div.className='msg';
+        const who = document.createElement('div'); who.className = 'who ' + (m.role==='user'?'user':'assistant');
+        const content = document.createElement('div'); content.className='content';
+
+        // Separate think content if present
+        let visible = m.content; let think = ''
+        const thinkMatch = visible?.match(/<think>([\s\S]*?)<\/think>/i)
+        if(thinkMatch){ think = thinkMatch[1].trim(); visible = visible.replace(thinkMatch[0],'').trim() }
+
+        // Markdown render only the visible part
+        const html = marked.parse(visible||'');
+        content.innerHTML = html
+        // Highlight code blocks
+        if(window.hljs){ content.querySelectorAll('pre code').forEach((block)=>{ try{hljs.highlightElement(block)}catch{}}) }
+
+        // Per-message think disclosure if captured
+        if(think){
+          const dis = document.createElement('details'); dis.style.marginTop='8px'; dis.open = !state.autoHideThink
+          const sum = document.createElement('summary'); sum.textContent = '<think> (this turn)'; sum.style.cursor='pointer'
+          const pre = document.createElement('pre'); pre.textContent = think
+          dis.appendChild(sum); dis.appendChild(pre); content.appendChild(dis)
+        }
+
+        div.appendChild(who); div.appendChild(content)
+        el.messages.appendChild(div)
+      })
+      requestAnimationFrame(()=>{ el.messages.scrollTop = el.messages.scrollHeight })
+    }
+
+    function renderThinkPanel(text){
+      if(state.autoHideThink){ el.thinkPanel.classList.add('hidden'); el.thinkState.textContent = 'auto-hidden' }
+      else{ el.thinkPanel.classList.remove('hidden'); el.thinkState.textContent = 'visible' }
+      if(typeof text === 'string' && text){
+        const span = document.createElement('div'); span.textContent = text
+        el.thinkPanel.appendChild(span)
+        el.thinkPanel.scrollTop = el.thinkPanel.scrollHeight
+      }
+    }
+
+    // ===== Chat persistence =====
+    function persist(){
+      const chats = load();
+      const id = state.chatId || ('c_' + Date.now())
+      chats[id] = {
+        id,
+        title: titleFrom(state.messages.find(m=>m.role==='user')?.content || 'Aether chat'),
+        messages: state.messages,
+        updated: Date.now()
+      }
+      state.chatId = id; saveChats(chats); renderChatList()
+    }
+
+    function loadChat(id){
+      const chats = load(); const chat = chats[id]; if(!chat) return
+      state.chatId = id; state.messages = chat.messages||[]; renderMessages(); toast('Loaded chat');
+    }
+
+    function newChat(){ state.chatId = null; state.messages = []; renderMessages(); toast('New chat'); randomMood() }
+
+    // ===== UI events =====
+    el.toggleSettings.onclick = ()=>{ el.drawers.style.display = (el.drawers.style.display==='none'?'grid':'none') }
+    el.theme.onchange = ()=>{ state.settings.theme = el.theme.value; applyTheme(state.settings.theme, state.settings.accent); save() }
+    el.accent.onchange = ()=>{ state.settings.accent = el.accent.value; applyTheme(state.settings.theme, state.settings.accent); save() }
+    el.language.onchange = ()=>{ state.settings.language = el.language.value; save(); toast('Language updated (will be added to instructions)') }
+    el.userCI.oninput = ()=>{ state.settings.userCI = el.userCI.value; save() }
+    el.openUserCI.onclick = ()=>{ el.drawers.style.display='grid'; el.userCI.focus() }
+
+    el.devPin.oninput = ()=>{ state.dev.pin = el.devPin.value; save() }
+    el.systemPrompt.oninput = ()=>{ state.dev.systemPrompt = el.systemPrompt.value; save() }
+    el.devCI.oninput = ()=>{ state.dev.devCI = el.devCI.value; save() }
+    el.forceEnglish.onchange = ()=>{ state.dev.forceEnglish = el.forceEnglish.value==='true'; save() }
+
+    el.btnDev.onclick = ()=>{ state.devMode = !state.devMode; el.modeBadge.textContent = state.devMode? 'Dev':'Chat'; toast(state.devMode? 'Developer mode on':'Developer mode off') }
+
+    el.toggleThink.onclick = ()=>{ state.thinkVisible = !state.thinkVisible; el.toggleThink.textContent = state.thinkVisible? 'Hide':'Show'; if(state.thinkVisible){ el.thinkPanel.classList.remove('hidden') } else { el.thinkPanel.classList.add('hidden') } }
+    el.autoHideThink.onchange = ()=>{ state.autoHideThink = el.autoHideThink.checked; renderThinkPanel(); }
+
+    el.purge.onclick = ()=>{ if(confirm('Delete ALL saved chats & settings?')){ localStorage.removeItem('aether_chats'); localStorage.removeItem('aether_state'); location.reload() } }
+    el.newChat.onclick = newChat
+    el.exportChat.onclick = ()=>{
+      const data = { id: state.chatId||('c_'+Date.now()), messages: state.messages }
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'})
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href=url; a.download=`aether-chat-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url)
+    }
+
+    // ===== Backend bridge (uses your Flask /chat endpoint) =====
+    async function generate(content){
+      // Build instruction strings for your current backend keys
+      const lang = state.settings.language || 'en'
+      const force = state.dev.forceEnglish
+      const langLine = force? 'Always respond in English.' : (lang? `Respond in ${lang}.` : '')
+      const customInstructions = [langLine, state.settings.userCI].filter(Boolean).join('\n')
+      const devInstructions = state.devMode ? [state.dev.systemPrompt, state.dev.devCI, langLine].filter(Boolean).join('\n') : ''
+
+      try{
+        const res = await fetch('/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+          message: content,
+          custom_instructions: customInstructions,
+          dev_instructions: devInstructions
+        })})
+        if(!res.ok) throw new Error('HTTP '+res.status)
+        const data = await res.json()
+        let acc = data?.response || ''
+
+        // Parse <think> blocks
+        const thinkMatch = acc.match(/<think>([\s\S]*?)<\/think>/i)
+        let visible = acc; if(thinkMatch){ visible = acc.replace(thinkMatch[0], '').trim(); const t = thinkMatch[1].trim(); if(!state.autoHideThink){ renderThinkPanel(t) } else { renderThinkPanel('') } }
+
+        // Push assistant message with visible content only
+        state.messages.push({role:'assistant', content: visible})
+        renderMessages(); persist(); randomMood()
+      }catch(err){
+        console.error(err); state.messages.push({role:'assistant', content: `**Error:** ${err.message}`}); renderMessages()
+      }
+    }
+
+    function loaderStub(){ return '<span class="loader"><span class="orb"></span><span class="orb"></span><span class="orb"></span></span> Thinking…' }
+
+    // ===== Init & Send =====
+    function hydrate(){
+      applyTheme(state.settings.theme, state.settings.accent)
+      el.theme.value = state.settings.theme
+      el.accent.value = state.settings.accent
+      el.language.value = state.settings.language
+      el.userCI.value = state.settings.userCI
+      el.devPin.value = state.dev.pin
+      el.systemPrompt.value = state.dev.systemPrompt
+      el.devCI.value = state.dev.devCI
+      el.forceEnglish.value = state.dev.forceEnglish? 'true':'false'
+      renderChatList(); renderMessages(); randomMood()
+    }
+
+    function send(){
+      const content = el.prompt.value.trim(); if(!content) return
+      el.prompt.value='';
+      state.messages.push({role:'user', content}); renderMessages(); persist();
+      // placeholder assistant message to show loader in UI think panel
+      renderThinkPanel('');
+      // show loader bubble
+      state.messages.push({role:'assistant', content: loaderStub()}); renderMessages();
+      // remove loader once real response arrives
+      ;(async()=>{
+        // pop loader before pushing real assistant message
+        state.messages.pop();
+        await generate(content);
+      })();
+    }
+
+    el.sendBtn.onclick = send
+    el.prompt.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send() } })
+
+    (function boot(){ load(); hydrate() })()
+  </script>
+</body>
+</html>
